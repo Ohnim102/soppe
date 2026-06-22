@@ -18,13 +18,13 @@ const converterSchema = z.object({
   productUrl: z
     .string()
     .trim()
-    .min(1, "Vui long nhap URL Shopee.")
-    .refine((value) => parseShopeeUrl(value) !== null, "URL khong dung dinh dang.")
+    .min(1, "Vui lòng nhập URL Shopee.")
+    .refine((value) => parseShopeeUrl(value) !== null, "URL không đúng định dạng.")
     .refine((value) => {
       const url = parseShopeeUrl(value);
 
       return Boolean(url && isSupportedShopeeDomain(url.hostname));
-    }, "Chi ho tro shopee.vn, www.shopee.vn hoac s.shopee.vn."),
+    }, "Chỉ hỗ trợ shopee.vn, www.shopee.vn hoặc s.shopee.vn."),
 });
 
 export function ShopeeAffiliateForm() {
@@ -51,9 +51,9 @@ export function ShopeeAffiliateForm() {
       setResult(nextResult.affiliateUrl);
       setOriginLink(nextResult.originLink);
       setResolved(nextResult.resolved);
-      toast.success("Da tao link Affiliate.");
+      toast.success("Đã tạo link Affiliate.");
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Khong the chuyen doi link Shopee.";
+      const message = error instanceof Error ? error.message : "Không thể chuyển đổi link Shopee.";
       setResult("");
       setOriginLink("");
       setResolved(false);
@@ -67,7 +67,7 @@ export function ShopeeAffiliateForm() {
     }
 
     await navigator.clipboard.writeText(result);
-    toast.success("Da copy link vao clipboard.");
+    toast.success("Đã copy link vào clipboard.");
   }
 
   function clearForm() {
@@ -89,10 +89,10 @@ export function ShopeeAffiliateForm() {
           <div>
             <p className="text-sm font-medium text-primary">Shopee Affiliate</p>
             <h1 className="mt-1 text-2xl font-semibold tracking-normal text-foreground sm:text-3xl">
-              Chuyen doi link Shopee
+              Chuyển đổi link Shopee
             </h1>
           </div>
-          <Button type="button" variant="ghost" size="icon" onClick={clearForm} aria-label="Xoa form">
+          <Button type="button" variant="ghost" size="icon" onClick={clearForm} aria-label="Xóa form">
             <RotateCcw />
           </Button>
         </div>
@@ -114,7 +114,7 @@ export function ShopeeAffiliateForm() {
 
           <Button type="submit" disabled={isSubmitting} className="h-11 w-full sm:w-fit">
             <Wand2 />
-            {isSubmitting ? "Dang chuyen doi" : "Chuyen doi"}
+            {isSubmitting ? "Đang chuyển đổi" : "Chuyển đổi"}
           </Button>
         </div>
       </form>
@@ -122,7 +122,7 @@ export function ShopeeAffiliateForm() {
       <aside className="rounded-lg border border-border bg-card p-5 shadow-2xl shadow-black/15 sm:p-6">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-sm font-medium text-primary">Ket qua</p>
+            <p className="text-sm font-medium text-primary">Kết quả</p>
             <h2 className="mt-1 text-xl font-semibold text-foreground">Link Affiliate</h2>
           </div>
           <Button type="button" variant="outline" size="icon" onClick={copyResult} disabled={!result} aria-label="Copy link">
@@ -133,14 +133,14 @@ export function ShopeeAffiliateForm() {
         <Textarea
           className="mt-5 font-mono text-xs leading-5"
           readOnly
-          value={result || "Link Affiliate se hien thi tai day sau khi chuyen doi."}
+          value={result || "Link Affiliate sẽ hiển thị tại đây sau khi chuyển đổi."}
         />
 
-        {resolved ? (
+        {/* {resolved ? (
           <p className="mt-4 rounded-md border border-amber-400/30 bg-amber-400/10 px-3 py-2 text-sm text-amber-900 dark:text-amber-100">
-            Link rut gon da duoc resolve thanh: <span className="break-all font-mono">{originLink}</span>
+            Link rút gọn đã được resolve thành: <span className="break-all font-mono">{originLink}</span>
           </p>
-        ) : null}
+        ) : null} */}
 
       </aside>
     </section>

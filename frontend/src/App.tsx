@@ -44,7 +44,7 @@ export default function App() {
             variant="outline"
             size="icon"
             onClick={() => setTheme(isDark ? "light" : "dark")}
-            aria-label="Doi giao dien sang dark hoac light mode"
+            aria-label="Đổi giao diện sang dark hoặc light mode"
           >
             {isDark ? <SunMedium /> : <Moon />}
           </Button>

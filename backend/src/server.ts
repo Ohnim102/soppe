@@ -50,11 +50,11 @@ function validateShopeeUrl(value: string): URL {
   const url = parseUrl(value);
 
   if (!url || !isSupportedShopeeDomain(url.hostname)) {
-    throw new HttpError(400, "URL Shopee khong hop le hoac domain khong duoc ho tro.");
+    throw new HttpError(400, "URL Shopee không hợp lệ hoặc domain không được hỗ trợ.");
   }
 
   if (url.protocol !== "https:" && url.protocol !== "http:") {
-    throw new HttpError(400, "URL Shopee phai dung giao thuc http hoac https.");
+    throw new HttpError(400, "URL Shopee phải dùng giao thức http hoặc https.");
   }
 
   return url;
@@ -114,7 +114,7 @@ function getAffiliateConfig() {
   const subId = process.env.SHOPEE_SUB_ID?.trim() ?? "";
 
   if (!affiliateId) {
-    throw new HttpError(500, "Chua cau hinh SHOPEE_AFFILIATE_ID.");
+    throw new HttpError(500, "Chưa cấu hình SHOPEE_AFFILIATE_ID.");
   }
 
   return { affiliateId, subId };
@@ -133,7 +133,7 @@ async function resolveShortShopeeLink(inputUrl: string): Promise<string> {
       signal: AbortSignal.timeout(10000),
     });
   } catch {
-    throw new HttpError(502, "Khong resolve duoc link rut gon Shopee.");
+    throw new HttpError(502, "Không resolve được link rút gọn Shopee.");
   }
 
   const resolvedUrl = response.url;
@@ -145,7 +145,7 @@ async function resolveShortShopeeLink(inputUrl: string): Promise<string> {
     (finalUrl.protocol !== "https:" && finalUrl.protocol !== "http:") ||
     finalUrl.hostname.toLowerCase() === SHORT_LINK_DOMAIN
   ) {
-    throw new HttpError(502, "Link rut gon Shopee khong tra ve link san pham goc.");
+    throw new HttpError(502, "Link rút gọn Shopee không trả về link sản phẩm gốc.");
   }
 
   return cleanShopeeOriginLink(resolvedUrl);
@@ -194,7 +194,7 @@ app.post("/api/convert", async (request: Request, response: ExpressResponse) => 
   const parsedBody = convertRequestSchema.safeParse(request.body);
 
   if (!parsedBody.success) {
-    response.status(400).json({ message: "Vui long nhap URL Shopee." });
+    response.status(400).json({ message: "Vui lòng nhập URL Shopee." });
     return;
   }
 
@@ -206,7 +206,7 @@ app.post("/api/convert", async (request: Request, response: ExpressResponse) => 
       return;
     }
 
-    response.status(500).json({ message: "Da co loi xay ra khi chuyen doi link." });
+    response.status(500).json({ message: "Đã có lỗi xảy ra khi chuyển đổi link." });
   }
 });
 

@@ -23,7 +23,7 @@ export async function convertShopeeLink(request: ConvertLinkRequest): Promise<Co
 
   if (!response.ok) {
     const errorBody = (await response.json().catch(() => ({}))) as ErrorResponse;
-    throw new Error(errorBody.message ?? "Khong the chuyen doi link Shopee.");
+    throw new Error(errorBody.message ?? "Không thể chuyển đổi link Shopee.");
   }
 
   return (await response.json()) as ConvertLinkResponse;
