@@ -2,6 +2,7 @@ export const SUPPORTED_SHOPEE_DOMAINS = [
   "shopee.vn",
   "www.shopee.vn",
   "s.shopee.vn",
+  "vn.shp.ee",
 ] as const;
 
 export type SupportedShopeeDomain = (typeof SUPPORTED_SHOPEE_DOMAINS)[number];

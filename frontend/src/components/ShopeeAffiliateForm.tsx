@@ -25,7 +25,7 @@ const converterSchema = z.object({
       const url = parseShopeeUrl(value);
 
       return Boolean(url && isSupportedShopeeDomain(url.hostname));
-    }, "Chỉ hỗ trợ shopee.vn, www.shopee.vn hoặc s.shopee.vn."),
+    }, "Chỉ hỗ trợ shopee.vn, www.shopee.vn, s.shopee.vn hoặc vn.shp.ee."),
 });
 
 export function ShopeeAffiliateForm() {

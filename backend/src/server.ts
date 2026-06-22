@@ -10,8 +10,8 @@ const __dirname = path.dirname(__filename);
 
 config({ path: path.resolve(__dirname, "../.env") });
 
-const SUPPORTED_SHOPEE_DOMAINS = ["shopee.vn", "www.shopee.vn", "s.shopee.vn"] as const;
-const SHORT_LINK_DOMAIN = "s.shopee.vn";
+const SUPPORTED_SHOPEE_DOMAINS = ["shopee.vn", "www.shopee.vn", "s.shopee.vn", "vn.shp.ee"] as const;
+const SHORT_LINK_DOMAINS = ["s.shopee.vn", "vn.shp.ee"] as const;
 const DEFAULT_ALLOWED_ORIGINS = ["https://sopee.gc.edu.vn"];
 
 type SupportedShopeeDomain = (typeof SUPPORTED_SHOPEE_DOMAINS)[number];
@@ -45,6 +45,10 @@ function parseUrl(value: string): URL | null {
 
 function isSupportedShopeeDomain(hostname: string): hostname is SupportedShopeeDomain {
   return SUPPORTED_SHOPEE_DOMAINS.includes(hostname.toLowerCase() as SupportedShopeeDomain);
+}
+
+function isShortShopeeLinkDomain(hostname: string): boolean {
+  return SHORT_LINK_DOMAINS.includes(hostname.toLowerCase() as (typeof SHORT_LINK_DOMAINS)[number]);
 }
 
 function validateShopeeUrl(value: string): URL {
@@ -144,7 +148,7 @@ async function resolveShortShopeeLink(inputUrl: string): Promise<string> {
     !finalUrl ||
     !isSupportedShopeeDomain(finalUrl.hostname) ||
     (finalUrl.protocol !== "https:" && finalUrl.protocol !== "http:") ||
-    finalUrl.hostname.toLowerCase() === SHORT_LINK_DOMAIN
+    isShortShopeeLinkDomain(finalUrl.hostname)
   ) {
     throw new HttpError(502, "Link rút gọn Shopee không trả về link sản phẩm gốc.");
   }
@@ -155,7 +159,7 @@ async function resolveShortShopeeLink(inputUrl: string): Promise<string> {
 async function getOriginLink(productUrl: string) {
   const inputUrl = validateShopeeUrl(productUrl.trim());
 
-  if (inputUrl.hostname.toLowerCase() !== SHORT_LINK_DOMAIN) {
+  if (!isShortShopeeLinkDomain(inputUrl.hostname)) {
     return {
       originLink: cleanShopeeOriginLink(productUrl.trim()),
       resolved: false,
