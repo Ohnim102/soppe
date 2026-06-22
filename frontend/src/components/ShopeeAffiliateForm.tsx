@@ -86,7 +86,7 @@ export function ShopeeAffiliateForm() {
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1">
-              <h1 className="text-3xl font-extrabold tracking-normal text-[#222] sm:text-4xl">Tạo Link Shopee</h1>
+              <h1 className="text-3xl font-extrabold tracking-normal text-[#222] sm:text-4xl">Get Voucher</h1>
             </div>
             <Button
               type="button"
@@ -148,7 +148,7 @@ export function ShopeeAffiliateForm() {
           <Textarea
             className="mt-4 min-h-24 resize-none rounded-lg border-orange-100 bg-white font-mono text-xs leading-5 text-slate-700 focus-visible:ring-[#f04f2a]"
             readOnly
-            value={result || "Link Affiliate sẽ hiển thị tại đây sau khi tạo."}
+            value={result || "Link có voucher sẽ hiển thị tại đây sau khi tạo."}
           />
 
           {/* {resolved ? (
@@ -165,19 +165,21 @@ export function ShopeeAffiliateForm() {
           <h2 className="text-sm font-bold uppercase tracking-wide text-slate-800">Hướng dẫn</h2>
         </div>
         <ol className="mt-4 grid gap-3 text-sm leading-6 text-slate-700">
-          <li>1. Sau khi tạo link, nhấn Copy Link.</li>
-          <li>2. Dán link dưới bình luận bài đăng.</li>
-          <li>3. Click vào link để mở Shopee và nhận mã.</li>
+          <li>1. Sau khi tạo link, nhấn "Copy Link".</li>
+          <li>2. Mở một bài đăng facebook bất kỳ. <a
+            className="mt-0 inline-flex items-center gap-2 text-sm font-semibold text-[#f04f2a] hover:text-[#c93618]"
+            href="https://www.facebook.com/"
+            rel="noreferrer"
+            target="_blank"
+          >
+            Mở Facebook
+            <ExternalLink className="size-4" />
+          </a>
+          </li>
+          <li>3. Sau đó dán link dưới bình luận bài đăng đó.</li>
+          <li>4. Click vào link để mở Shopee và nhận mã.</li>
         </ol>
-        <a
-          className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-[#f04f2a] hover:text-[#c93618]"
-          href="https://www.facebook.com/"
-          rel="noreferrer"
-          target="_blank"
-        >
-          Đến bài đăng Facebook
-          <ExternalLink className="size-4" />
-        </a>
+
       </div>
 
       <figure className="mt-5 w-full overflow-hidden rounded-lg bg-white shadow-xl shadow-red-950/15">
