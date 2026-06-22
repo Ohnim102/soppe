@@ -46,9 +46,16 @@ Noi dung:
 ```env
 SHOPEE_AFFILIATE_ID=17399820370
 SHOPEE_SUB_ID=addlivetag-huybt---
+CORS_ALLOWED_ORIGINS=https://sopee.gc.edu.vn
 ```
 
 Khong bat buoc dat `PORT` tren cPanel. cPanel/Passenger thuong tu cap port qua `process.env.PORT`.
+
+Neu frontend va backend khac domain, `CORS_ALLOWED_ORIGINS` phai chua domain frontend. Co the khai bao nhieu domain bang dau phay:
+
+```env
+CORS_ALLOWED_ORIGINS=https://sopee.gc.edu.vn,https://www.sopee.gc.edu.vn
+```
 
 Frontend can file:
 
@@ -166,6 +173,7 @@ Neu website hien giao dien nhung convert bi loi, kiem tra:
 
 - `backend/.env` da dung ten bien chua.
 - `frontend/.env` co dung `VITE_API_BASE_URL` chua; neu moi sua thi phai build lai.
+- `backend/.env` co `CORS_ALLOWED_ORIGINS=https://sopee.gc.edu.vn` chua; neu moi sua thi restart app.
 - App da duoc restart sau khi sua `.env` chua.
 - Hosting co cho server truy cap internet de resolve link `s.shopee.vn` khong.
 - `Application startup file` co dung la `backend/dist/server.js` khong.

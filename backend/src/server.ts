@@ -1,5 +1,5 @@
 import { config } from "dotenv";
-import express, { type Request, type Response as ExpressResponse } from "express";
+import express, { type NextFunction, type Request, type Response as ExpressResponse } from "express";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -12,6 +12,7 @@ config({ path: path.resolve(__dirname, "../.env") });
 
 const SUPPORTED_SHOPEE_DOMAINS = ["shopee.vn", "www.shopee.vn", "s.shopee.vn"] as const;
 const SHORT_LINK_DOMAIN = "s.shopee.vn";
+const DEFAULT_ALLOWED_ORIGINS = ["https://sopee.gc.edu.vn"];
 
 type SupportedShopeeDomain = (typeof SUPPORTED_SHOPEE_DOMAINS)[number];
 
@@ -176,6 +177,35 @@ function createAffiliateUrl(originLink: string, affiliateId: string, subId: stri
   );
 }
 
+function getAllowedOrigins() {
+  return (process.env.CORS_ALLOWED_ORIGINS ?? DEFAULT_ALLOWED_ORIGINS.join(","))
+    .split(",")
+    .map((origin) => origin.trim().replace(/\/$/, ""))
+    .filter(Boolean);
+}
+
+const allowedOrigins = new Set(getAllowedOrigins());
+
+function applyCors(request: Request, response: ExpressResponse, next: NextFunction) {
+  const origin = request.headers.origin?.replace(/\/$/, "");
+
+  if (origin && allowedOrigins.has(origin)) {
+    response.setHeader("Access-Control-Allow-Origin", origin);
+    response.setHeader("Vary", "Origin");
+  }
+
+  response.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+  response.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  response.setHeader("Access-Control-Max-Age", "86400");
+
+  if (request.method === "OPTIONS") {
+    response.sendStatus(204);
+    return;
+  }
+
+  next();
+}
+
 async function convertShopeeLink(productUrl: string): Promise<ConvertResponse> {
   const { affiliateId, subId } = getAffiliateConfig();
   const { originLink, resolved } = await getOriginLink(productUrl);
@@ -188,6 +218,7 @@ async function convertShopeeLink(productUrl: string): Promise<ConvertResponse> {
 }
 
 const app = express();
+app.use(applyCors);
 app.use(express.json({ limit: "16kb" }));
 
 app.post("/api/convert", async (request: Request, response: ExpressResponse) => {
