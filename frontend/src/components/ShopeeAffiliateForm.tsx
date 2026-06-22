@@ -10,6 +10,7 @@ import { FormMessage } from "@/components/ui/form-message";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import facebookVoucherImage from "@/assets/facebook-voucher.png";
 import { convertShopeeLink } from "@/services/convertApi";
 import { isSupportedShopeeDomain, parseShopeeUrl } from "@/services/shopeeAffiliate";
 import type { ConverterFormValues } from "@/types/converter";
@@ -86,7 +87,6 @@ export function ShopeeAffiliateForm() {
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1">
               <h1 className="text-3xl font-extrabold tracking-normal text-[#222] sm:text-4xl">Tạo Link Shopee</h1>
-              <p className="mt-2 text-sm font-medium text-[#f04f2a]">Săn sale</p>
             </div>
             <Button
               type="button"
@@ -130,7 +130,7 @@ export function ShopeeAffiliateForm() {
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <Info className="size-5 text-[#f04f2a]" />
-              <h2 className="text-sm font-bold uppercase tracking-wide text-slate-800">Thông tin sản phẩm</h2>
+              <h2 className="text-sm font-bold uppercase tracking-wide text-slate-800">Link</h2>
             </div>
             <Button
               type="button"
@@ -179,6 +179,14 @@ export function ShopeeAffiliateForm() {
           <ExternalLink className="size-4" />
         </a>
       </div>
+
+      <figure className="mt-5 w-full overflow-hidden rounded-lg bg-white shadow-xl shadow-red-950/15">
+        <img
+          src={facebookVoucherImage}
+          alt="Mã giảm giá và hoàn Xu Facebook"
+          className="block h-auto w-full object-cover"
+        />
+      </figure>
     </section>
   );
 }
