@@ -135,13 +135,13 @@ export function ShopeeAffiliateForm() {
             <Button
               type="button"
               variant="outline"
-              size="icon"
               onClick={copyResult}
               disabled={!result}
               aria-label="Copy link"
-              className="border-orange-200 bg-white text-[#f04f2a] hover:bg-orange-50"
+              className="h-10 border-orange-200 bg-white px-3 text-[#f04f2a] hover:bg-orange-50"
             >
               <Copy />
+              Sao chép
             </Button>
           </div>
 
@@ -151,11 +151,11 @@ export function ShopeeAffiliateForm() {
             value={result || "Link Affiliate sẽ hiển thị tại đây sau khi tạo."}
           />
 
-          {resolved ? (
+          {/* {resolved ? (
             <p className="mt-3 rounded-md border border-orange-200 bg-white px-3 py-2 text-xs leading-5 text-slate-600">
               Link rút gọn đã được resolve thành: <span className="break-all font-mono">{originLink}</span>
             </p>
-          ) : null}
+          ) : null} */}
         </div>
       </div>
 
