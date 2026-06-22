@@ -1,60 +1,24 @@
-import { Moon, SunMedium } from "lucide-react";
-import { useEffect, useState } from "react";
 import { Toaster } from "sonner";
 
 import { ShopeeAffiliateForm } from "@/components/ShopeeAffiliateForm";
-import { Button } from "@/components/ui/button";
-
-type Theme = "dark" | "light";
-
-function getInitialTheme(): Theme {
-  if (typeof window === "undefined") {
-    return "dark";
-  }
-
-  return (window.localStorage.getItem("theme") as Theme | null) ?? "dark";
-}
 
 export default function App() {
-  const [theme, setTheme] = useState<Theme>(getInitialTheme);
-
-  useEffect(() => {
-    document.documentElement.classList.toggle("dark", theme === "dark");
-    window.localStorage.setItem("theme", theme);
-  }, [theme]);
-
-  const isDark = theme === "dark";
-
   return (
-    <main className="min-h-screen bg-background text-foreground">
-      <div className="fixed inset-0 -z-10 bg-[radial-gradient(circle_at_top_left,_rgba(238,77,45,0.18),_transparent_34%),linear-gradient(135deg,_rgba(20,184,166,0.12),_transparent_38%)]" />
-      <div className="mx-auto flex min-h-screen w-full max-w-7xl flex-col px-4 py-5 sm:px-6 lg:px-8">
-        <header className="mb-8 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="grid size-10 place-items-center rounded-md bg-primary text-primary-foreground shadow-lg shadow-primary/20">
-              <span className="text-base font-bold">S</span>
+    <main className="min-h-screen overflow-hidden bg-[#f04f2a] text-foreground">
+      <div className="pointer-events-none fixed inset-0 -z-10 bg-[linear-gradient(180deg,_rgba(255,255,255,0.18),_rgba(255,255,255,0)_26%),radial-gradient(circle_at_50%_-10%,_rgba(255,255,255,0.4),_rgba(255,255,255,0)_34%)]" />
+      <div className="mx-auto flex min-h-screen w-full max-w-3xl flex-col px-4 py-7 sm:px-6">
+        <header className="mb-6 flex items-center justify-center">
+          <div className="flex flex-col items-center text-center text-white">
+            <div className="grid size-16 place-items-center rounded-full bg-white text-3xl font-black text-[#f04f2a] shadow-xl shadow-red-900/20">
+              S
             </div>
-            <div>
-              <p className="text-sm font-semibold text-foreground">Shopee Link Converter</p>
-              <p className="text-xs text-muted-foreground">ConvertLink</p>
-            </div>
+            <p className="mt-3 text-sm font-semibold uppercase tracking-[0.22em] text-white/80">Săn sale</p>
           </div>
-          <Button
-            type="button"
-            variant="outline"
-            size="icon"
-            onClick={() => setTheme(isDark ? "light" : "dark")}
-            aria-label="Đổi giao diện sang dark hoặc light mode"
-          >
-            {isDark ? <SunMedium /> : <Moon />}
-          </Button>
         </header>
 
-        <div className="flex flex-1 items-center">
-          <ShopeeAffiliateForm />
-        </div>
+        <ShopeeAffiliateForm />
       </div>
-      <Toaster richColors position="top-center" theme={theme} />
+      <Toaster richColors position="top-center" theme="light" />
     </main>
   );
 }

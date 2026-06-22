@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Copy, Link2, RotateCcw, Wand2 } from "lucide-react";
+import { CheckCircle2, Copy, ExternalLink, Info, Link2, RotateCcw, Wand2 } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -80,69 +80,105 @@ export function ShopeeAffiliateForm() {
   }
 
   return (
-    <section className="mx-auto grid w-full max-w-6xl gap-6 lg:grid-cols-[1fr_0.85fr]">
-      <form
-        className="rounded-lg border border-border bg-card p-5 shadow-2xl shadow-black/15 sm:p-6"
-        onSubmit={handleSubmit(onSubmit)}
-      >
-        <div className="flex flex-col gap-2 border-b border-border pb-5 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <p className="text-sm font-medium text-primary">Shopee Affiliate</p>
-            <h1 className="mt-1 text-2xl font-semibold tracking-normal text-foreground sm:text-3xl">
-              Chuyển đổi link Shopee
-            </h1>
+    <section className="flex flex-1 flex-col items-center pb-8 text-center">
+      <div className="w-full rounded-lg bg-white px-4 py-7 shadow-2xl shadow-red-950/25 sm:px-7 sm:py-8">
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex-1">
+              <h1 className="text-3xl font-extrabold tracking-normal text-[#222] sm:text-4xl">Tạo Link Shopee</h1>
+              <p className="mt-2 text-sm font-medium text-[#f04f2a]">Săn sale</p>
+            </div>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={clearForm}
+              aria-label="Xóa form"
+              className="shrink-0 text-slate-500 hover:bg-orange-50 hover:text-[#f04f2a]"
+            >
+              <RotateCcw />
+            </Button>
           </div>
-          <Button type="button" variant="ghost" size="icon" onClick={clearForm} aria-label="Xóa form">
-            <RotateCcw />
-          </Button>
-        </div>
 
-        <div className="mt-6 grid gap-5">
-          <div className="grid gap-2">
-            <Label htmlFor="productUrl">URL Shopee</Label>
+          <div className="mt-7 grid gap-3 text-left">
+            <Label htmlFor="productUrl" className="text-sm font-semibold text-slate-700">
+              Link sản phẩm Shopee
+            </Label>
             <div className="relative">
-              <Link2 className="pointer-events-none absolute left-3 top-3.5 size-4 text-muted-foreground" />
+              <Link2 className="pointer-events-none absolute left-4 top-1/2 size-5 -translate-y-1/2 text-slate-400" />
               <Input
                 id="productUrl"
-                placeholder="https://shopee.vn/product/xxx/yyy"
-                className="pl-9"
+                placeholder="Dán link sản phẩm Shopee vào đây"
+                className="h-14 rounded-lg border-slate-200 bg-slate-50 pl-12 pr-4 text-base shadow-inner shadow-slate-200/40 focus-visible:ring-[#f04f2a]"
                 {...register("productUrl")}
               />
             </div>
             <FormMessage>{errors.productUrl?.message}</FormMessage>
           </div>
 
-          <Button type="submit" disabled={isSubmitting} className="h-11 w-full sm:w-fit">
+          <Button
+            type="submit"
+            disabled={isSubmitting}
+            className="mt-5 h-12 w-full rounded-lg bg-[#f04f2a] text-base font-bold shadow-lg shadow-orange-600/25 hover:bg-[#df421f] sm:h-14"
+          >
             <Wand2 />
-            {isSubmitting ? "Đang chuyển đổi" : "Chuyển đổi"}
+            {isSubmitting ? "Đang tạo link" : "Tạo Link Ngay"}
           </Button>
-        </div>
-      </form>
+        </form>
 
-      <aside className="rounded-lg border border-border bg-card p-5 shadow-2xl shadow-black/15 sm:p-6">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <p className="text-sm font-medium text-primary">Kết quả</p>
-            <h2 className="mt-1 text-xl font-semibold text-foreground">Link Affiliate</h2>
+        <div className="mt-7 rounded-lg border border-orange-100 bg-[#fff7f3] p-4 text-left">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <Info className="size-5 text-[#f04f2a]" />
+              <h2 className="text-sm font-bold uppercase tracking-wide text-slate-800">Thông tin sản phẩm</h2>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              onClick={copyResult}
+              disabled={!result}
+              aria-label="Copy link"
+              className="border-orange-200 bg-white text-[#f04f2a] hover:bg-orange-50"
+            >
+              <Copy />
+            </Button>
           </div>
-          <Button type="button" variant="outline" size="icon" onClick={copyResult} disabled={!result} aria-label="Copy link">
-            <Copy />
-          </Button>
+
+          <Textarea
+            className="mt-4 min-h-24 resize-none rounded-lg border-orange-100 bg-white font-mono text-xs leading-5 text-slate-700 focus-visible:ring-[#f04f2a]"
+            readOnly
+            value={result || "Link Affiliate sẽ hiển thị tại đây sau khi tạo."}
+          />
+
+          {resolved ? (
+            <p className="mt-3 rounded-md border border-orange-200 bg-white px-3 py-2 text-xs leading-5 text-slate-600">
+              Link rút gọn đã được resolve thành: <span className="break-all font-mono">{originLink}</span>
+            </p>
+          ) : null}
         </div>
+      </div>
 
-        <Textarea
-          className="mt-5 font-mono text-xs leading-5"
-          readOnly
-          value={result || "Link Affiliate sẽ hiển thị tại đây sau khi chuyển đổi."}
-        />
-
-        {/* {resolved ? (
-          <p className="mt-4 rounded-md border border-amber-400/30 bg-amber-400/10 px-3 py-2 text-sm text-amber-900 dark:text-amber-100">
-            Link rút gọn đã được resolve thành: <span className="break-all font-mono">{originLink}</span>
-          </p>
-        ) : null} */}
-
-      </aside>
+      <div className="mt-5 w-full rounded-lg bg-white/95 p-5 text-left shadow-xl shadow-red-950/15">
+        <div className="flex items-center gap-2">
+          <CheckCircle2 className="size-5 text-[#f04f2a]" />
+          <h2 className="text-sm font-bold uppercase tracking-wide text-slate-800">Hướng dẫn</h2>
+        </div>
+        <ol className="mt-4 grid gap-3 text-sm leading-6 text-slate-700">
+          <li>1. Sau khi tạo link, nhấn Copy Link.</li>
+          <li>2. Dán link dưới bình luận bài đăng.</li>
+          <li>3. Click vào link để mở Shopee và nhận mã.</li>
+        </ol>
+        <a
+          className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-[#f04f2a] hover:text-[#c93618]"
+          href="https://www.facebook.com/"
+          rel="noreferrer"
+          target="_blank"
+        >
+          Đến bài đăng Facebook
+          <ExternalLink className="size-4" />
+        </a>
+      </div>
     </section>
   );
 }
