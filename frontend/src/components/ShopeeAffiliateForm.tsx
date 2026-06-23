@@ -15,6 +15,33 @@ import { convertShopeeLink } from "@/services/convertApi";
 import { isSupportedShopeeDomain, parseShopeeUrl } from "@/services/shopeeAffiliate";
 import type { ConverterFormValues } from "@/types/converter";
 
+async function copyTextToClipboard(text: string) {
+  if (navigator.clipboard?.writeText) {
+    await navigator.clipboard.writeText(text);
+    return;
+  }
+
+  const textarea = document.createElement("textarea");
+  textarea.value = text;
+  textarea.setAttribute("readonly", "");
+  textarea.style.position = "fixed";
+  textarea.style.top = "0";
+  textarea.style.left = "-9999px";
+  document.body.appendChild(textarea);
+  textarea.focus();
+  textarea.select();
+
+  try {
+    const copied = document.execCommand("copy");
+
+    if (!copied) {
+      throw new Error("Copy command was rejected.");
+    }
+  } finally {
+    document.body.removeChild(textarea);
+  }
+}
+
 const converterSchema = z.object({
   productUrl: z
     .string()
@@ -67,8 +94,12 @@ export function ShopeeAffiliateForm() {
       return;
     }
 
-    await navigator.clipboard.writeText(result);
-    toast.success("Đã copy link vào clipboard.");
+    try {
+      await copyTextToClipboard(result);
+      toast.success("Đã copy link vào clipboard.");
+    } catch {
+      toast.error("Không thể copy link. Vui lòng copy thủ công.");
+    }
   }
 
   function clearForm() {
