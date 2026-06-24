@@ -26,6 +26,8 @@ interface ConvertResponse {
   resolved: boolean;
 }
 
+type LinkConverter = (productUrl: string) => Promise<ConvertResponse>;
+
 class HttpError extends Error {
   constructor(
     public readonly statusCode: number,
@@ -125,6 +127,17 @@ function getAffiliateConfig() {
   return { affiliateId, subId };
 }
 
+function getAffiliateDashboard(): URL {
+  const value = process.env.SHOPEE_AFFILIATE_DASHBOARD?.trim() ?? "";
+  const dashboardUrl = parseUrl(value);
+
+  if (!dashboardUrl || (dashboardUrl.protocol !== "https:" && dashboardUrl.protocol !== "http:")) {
+    throw new HttpError(500, "Chưa cấu hình SHOPEE_AFFILIATE_DASHBOARD hợp lệ.");
+  }
+
+  return dashboardUrl;
+}
+
 async function resolveShortShopeeLink(inputUrl: string): Promise<string> {
   let response: globalThis.Response;
 
@@ -181,6 +194,21 @@ function createAffiliateUrl(originLink: string, affiliateId: string, subId: stri
   );
 }
 
+function createDashboardAffiliateUrl(originLink: string): string {
+  const productIds = extractProductIds(validateShopeeUrl(originLink));
+
+  if (!productIds) {
+    throw new HttpError(400, "URL Shopee không chứa mã sản phẩm hợp lệ.");
+  }
+
+  const affiliateUrl = getAffiliateDashboard();
+  affiliateUrl.pathname = `${affiliateUrl.pathname.replace(/\/+$/, "")}/${productIds.itemId}`;
+  affiliateUrl.search = "";
+  affiliateUrl.hash = "";
+
+  return affiliateUrl.toString();
+}
+
 function getAllowedOrigins() {
   return (process.env.CORS_ALLOWED_ORIGINS ?? DEFAULT_ALLOWED_ORIGINS.join(","))
     .split(",")
@@ -221,60 +249,44 @@ async function convertShopeeLink(productUrl: string): Promise<ConvertResponse> {
   };
 }
 
+async function convertShopeeDashboardLink(productUrl: string): Promise<ConvertResponse> {
+  const { originLink, resolved } = await getOriginLink(productUrl);
+
+  return {
+    affiliateUrl: createDashboardAffiliateUrl(originLink),
+    originLink,
+    resolved,
+  };
+}
+
+function createConvertHandler(convert: LinkConverter) {
+  return async (request: Request, response: ExpressResponse) => {
+    const parsedBody = convertRequestSchema.safeParse(request.body);
+
+    if (!parsedBody.success) {
+      response.status(400).json({ message: "Vui lòng nhập URL Shopee." });
+      return;
+    }
+
+    try {
+      response.json(await convert(parsedBody.data.productUrl));
+    } catch (error) {
+      if (error instanceof HttpError) {
+        response.status(error.statusCode).json({ message: error.message });
+        return;
+      }
+
+      response.status(500).json({ message: "Đã có lỗi xảy ra khi chuyển đổi link." });
+    }
+  };
+}
+
 const app = express();
 app.use(applyCors);
 app.use(express.json({ limit: "16kb" }));
 
-app.post("/api/convert", async (request: Request, response: ExpressResponse) => {
-  const parsedBody = convertRequestSchema.safeParse(request.body);
-
-  if (!parsedBody.success) {
-    response.status(400).json({ message: "Vui lòng nhập URL Shopee." });
-    return;
-  }
-
-  try {
-    response.json(await convertShopeeLink(parsedBody.data.productUrl));
-  } catch (error) {
-    if (error instanceof HttpError) {
-      response.status(error.statusCode).json({ message: error.message });
-      return;
-    }
-
-    response.status(500).json({ message: "Đã có lỗi xảy ra khi chuyển đổi link." });
-  }
-});
-
-
-app.post("/api/getlinkA", async (request: Request, response: ExpressResponse) => {
-  const parsedBody = convertRequestSchema.safeParse(request.body);
-
-  if (!parsedBody.success) {
-    response.status(400).json({ message: "Vui lòng nhập URL Shopee." });
-    return;
-  }
-
-  try {
-    const { originLink, resolved } = await getOriginLink(parsedBody.data.productUrl);
-    const url = validateShopeeUrl(originLink);
-    const productIds = extractProductIds(url);
-
-    const affiliateDashboard = process.env.SHOPEE_AFFILIATE_DASHBOARD?.trim() ?? "";
-    const affiliateUrl = `${affiliateDashboard}/${productIds?.itemId}`;
-    response.json({
-      affiliateUrl: affiliateUrl,
-      originLink,
-      resolved,
-    });
-  } catch (error) {
-    if (error instanceof HttpError) {
-      response.status(error.statusCode).json({ message: error.message });
-      return;
-    }
-
-    response.status(500).json({ message: "Đã có lỗi xảy ra khi chuyển đổi link." });
-  }
-});
+app.post("/api/convert", createConvertHandler(convertShopeeLink));
+app.post("/api/getlinkA", createConvertHandler(convertShopeeDashboardLink));
 
 const frontendDistPath = path.resolve(__dirname, "../../frontend/dist");
 const frontendIndexPath = path.join(frontendDistPath, "index.html");
