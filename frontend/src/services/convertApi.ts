@@ -15,7 +15,18 @@ interface ErrorResponse {
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, "") ?? "";
 
 export async function convertShopeeLink(request: ConvertLinkRequest): Promise<ConvertLinkResponse> {
-  const response = await fetch(`${apiBaseUrl}/api/convert`, {
+  return requestConvertedLink("/api/convert", request);
+}
+
+export async function getLinkA(request: ConvertLinkRequest): Promise<ConvertLinkResponse> {
+  return requestConvertedLink("/api/getlinkA", request);
+}
+
+async function requestConvertedLink(
+  endpoint: string,
+  request: ConvertLinkRequest,
+): Promise<ConvertLinkResponse> {
+  const response = await fetch(`${apiBaseUrl}${endpoint}`, {
     method: "POST",
     headers: {
       "content-type": "application/json",

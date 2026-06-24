@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import facebookVoucherImage from "@/assets/facebook-voucher.png";
-import { convertShopeeLink } from "@/services/convertApi";
+import { convertShopeeLink, getLinkA } from "@/services/convertApi";
 import { isSupportedShopeeDomain, parseShopeeUrl } from "@/services/shopeeAffiliate";
 import type { ConverterFormValues } from "@/types/converter";
 
@@ -57,14 +57,15 @@ const converterSchema = z.object({
 
 export function ShopeeAffiliateForm() {
   const [result, setResult] = useState("");
-  const [originLink, setOriginLink] = useState("");
-  const [resolved, setResolved] = useState(false);
+  const [isOpeningLinkA, setIsOpeningLinkA] = useState(false);
 
   const {
     formState: { errors, isSubmitting },
+    getValues,
     handleSubmit,
     register,
     reset,
+    trigger,
   } = useForm<ConverterFormValues>({
     defaultValues: {
       productUrl: "",
@@ -77,14 +78,10 @@ export function ShopeeAffiliateForm() {
       const nextResult = await convertShopeeLink(values);
 
       setResult(nextResult.affiliateUrl);
-      setOriginLink(nextResult.originLink);
-      setResolved(nextResult.resolved);
       toast.success("Đã tạo link Affiliate.");
     } catch (error) {
       const message = error instanceof Error ? error.message : "Không thể chuyển đổi link Shopee.";
       setResult("");
-      setOriginLink("");
-      setResolved(false);
       toast.error(message);
     }
   }
@@ -102,13 +99,48 @@ export function ShopeeAffiliateForm() {
     }
   }
 
+  async function openLinkA() {
+    if (isOpeningLinkA) {
+      return;
+    }
+
+    const popup = window.open("about:blank", "_blank");
+
+    if (!popup) {
+      toast.error("Trình duyệt đã chặn tab mới. Vui lòng cho phép popup rồi thử lại.");
+      return;
+    }
+
+    popup.opener = null;
+    setIsOpeningLinkA(true);
+
+    try {
+      const isValid = await trigger("productUrl");
+
+      if (!isValid) {
+        popup.close();
+        return;
+      }
+
+      const response = await getLinkA({
+        productUrl: getValues("productUrl"),
+      });
+
+      popup.location.replace(response.affiliateUrl);
+    } catch (error) {
+      popup.close();
+      const message = error instanceof Error ? error.message : "Không thể lấy link.";
+      toast.error(message);
+    } finally {
+      setIsOpeningLinkA(false);
+    }
+  }
+
   function clearForm() {
     reset({
       productUrl: "",
     });
     setResult("");
-    setOriginLink("");
-    setResolved(false);
   }
 
   return (
@@ -220,6 +252,17 @@ export function ShopeeAffiliateForm() {
           className="block h-auto w-full object-cover"
         />
       </figure>
+
+      <Button
+        type="button"
+        variant="outline"
+        disabled={isSubmitting || isOpeningLinkA}
+        onClick={openLinkA}
+        className="mt-5 h-12 w-full rounded-lg border-white bg-white text-base font-bold text-[#f04f2a] shadow-xl shadow-red-950/15 hover:bg-orange-50 hover:text-[#df421f] sm:h-14"
+      >
+        <ExternalLink />
+        {isOpeningLinkA ? "Đang mở link" : "Mở Link A"}
+      </Button>
     </section>
   );
 }
