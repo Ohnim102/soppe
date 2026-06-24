@@ -245,6 +245,37 @@ app.post("/api/convert", async (request: Request, response: ExpressResponse) => 
   }
 });
 
+
+app.post("/api/getlinkA", async (request: Request, response: ExpressResponse) => {
+  const parsedBody = convertRequestSchema.safeParse(request.body);
+
+  if (!parsedBody.success) {
+    response.status(400).json({ message: "Vui lòng nhập URL Shopee." });
+    return;
+  }
+
+  try {
+    const { originLink, resolved } = await getOriginLink(parsedBody.data.productUrl);
+    const url = validateShopeeUrl(originLink);
+    const productIds = extractProductIds(url);
+
+    const affiliateDashboard = process.env.SHOPEE_AFFILIATE_DASHBOARD?.trim() ?? "";
+    const affiliateUrl = `${affiliateDashboard}/${productIds?.itemId}`;
+    response.json({
+      affiliateUrl: affiliateUrl,
+      originLink,
+      resolved,
+    });
+  } catch (error) {
+    if (error instanceof HttpError) {
+      response.status(error.statusCode).json({ message: error.message });
+      return;
+    }
+
+    response.status(500).json({ message: "Đã có lỗi xảy ra khi chuyển đổi link." });
+  }
+});
+
 const frontendDistPath = path.resolve(__dirname, "../../frontend/dist");
 const frontendIndexPath = path.join(frontendDistPath, "index.html");
 
