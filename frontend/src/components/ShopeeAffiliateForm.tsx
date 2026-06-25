@@ -15,6 +15,9 @@ import { convertShopeeLink, getLinkA } from "@/services/convertApi";
 import { isSupportedShopeeDomain, parseShopeeUrl } from "@/services/shopeeAffiliate";
 import type { ConverterFormValues } from "@/types/converter";
 
+const FACEBOOK_COMMENT_TARGET_URL =
+  import.meta.env.VITE_FACEBOOK_COMMENT_TARGET_URL ?? "https://www.facebook.com/";
+
 function ShopeeIcon() {
   return (
     <svg
@@ -265,7 +268,7 @@ export function ShopeeAffiliateForm() {
           <li>1. Sau khi tạo link, nhấn "Copy Link".</li>
           <li>2. Mở một bài đăng facebook bất kỳ. <a
             className="mt-0 inline-flex items-center gap-2 text-sm font-semibold text-[#f04f2a] hover:text-[#c93618]"
-            href="https://www.facebook.com/"
+            href={FACEBOOK_COMMENT_TARGET_URL}
             rel="noreferrer"
             target="_blank"
           >
