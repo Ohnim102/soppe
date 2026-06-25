@@ -47,6 +47,10 @@ Noi dung:
 SHOPEE_AFFILIATE_ID=17399820370
 SHOPEE_SUB_ID=addlivetag-huybt---
 CORS_ALLOWED_ORIGINS=https://sopee.gc.edu.vn
+LOG_LEVEL=info
+LOG_PRETTY=false
+LOG_IP=false
+LOG_FILE=logs/backend.log
 ```
 
 Khong bat buoc dat `PORT` tren cPanel. cPanel/Passenger thuong tu cap port qua `process.env.PORT`.
@@ -56,6 +60,10 @@ Neu frontend va backend khac domain, `CORS_ALLOWED_ORIGINS` phai chua domain fro
 ```env
 CORS_ALLOWED_ORIGINS=https://sopee.gc.edu.vn,https://www.sopee.gc.edu.vn
 ```
+
+Backend ghi log JSON dong thoi ra `stdout` va `backend/logs/backend.log`. Khong nen bat `LOG_PRETTY` trong production. Moi response co `X-Request-Id` de doi chieu access log voi log xu ly convert.
+
+Ung dung chi append vao file log va khong tu xoa log cu. Nen cau hinh log rotation cua hosting de gioi han dung luong file.
 
 Frontend can file:
 

@@ -85,3 +85,27 @@ Thành công:
   "resolved": true
 }
 ```
+
+## Backend logging
+
+Backend ghi structured log ra `stdout`. Production dùng JSON để cPanel/Passenger hoặc hệ thống thu thập log xử lý; ứng dụng không tự ghi file log.
+
+Các biến môi trường:
+
+```env
+LOG_LEVEL=info
+LOG_PRETTY=false
+LOG_IP=false
+LOG_FILE=logs/backend.log
+```
+
+- `LOG_LEVEL`: `debug`, `info`, `warn`, `error` hoặc `silent`.
+- `LOG_PRETTY=true`: định dạng log dễ đọc khi phát triển local.
+- `LOG_IP=true`: cho phép ghi IP client; mặc định tắt.
+- `LOG_FILE`: đường dẫn file tương đối từ thư mục `backend`; mặc định là `backend/logs/backend.log`. Đặt giá trị rỗng để tắt ghi file.
+
+Mỗi HTTP response có header `X-Request-Id`. Có thể dùng ID này để tìm access log và các event liên quan như `conversion_started`, `short_link_resolved`, `conversion_succeeded` và `conversion_failed`.
+
+Logger không ghi request body, URL Shopee đầy đủ, affiliate URL, Affiliate ID hoặc Sub ID.
+
+File được ghi theo định dạng JSON Lines và tự tạo thư mục cha. Ứng dụng chỉ append log, không tự xoay hoặc xóa file; production nên cấu hình log rotation từ hosting hoặc hệ điều hành.

@@ -1,14 +1,15 @@
-import { config } from "dotenv";
 import express, { type NextFunction, type Request, type Response as ExpressResponse } from "express";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import type { Logger } from "pino";
 import { z } from "zod";
+import { logger, normalizeError } from "./lib/logger.js";
+import { errorHandler } from "./middleware/error-handler.js";
+import { requestLogger } from "./middleware/request-logger.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
-config({ path: path.resolve(__dirname, "../.env") });
 
 const SUPPORTED_SHOPEE_DOMAINS = ["shopee.vn", "www.shopee.vn", "s.shopee.vn", "vn.shp.ee"] as const;
 const SHORT_LINK_DOMAINS = ["s.shopee.vn", "vn.shp.ee"] as const;
@@ -26,7 +27,8 @@ interface ConvertResponse {
   resolved: boolean;
 }
 
-type LinkConverter = (productUrl: string) => Promise<ConvertResponse>;
+type ConversionMode = "affiliate" | "dashboard";
+type LinkConverter = (productUrl: string, log: Logger) => Promise<ConvertResponse>;
 
 class HttpError extends Error {
   constructor(
@@ -138,7 +140,8 @@ function getAffiliateDashboard(): URL {
   return dashboardUrl;
 }
 
-async function resolveShortShopeeLink(inputUrl: string): Promise<string> {
+async function resolveShortShopeeLink(inputUrl: string, log: Logger): Promise<string> {
+  const startedAt = performance.now();
   let response: globalThis.Response;
 
   try {
@@ -150,7 +153,16 @@ async function resolveShortShopeeLink(inputUrl: string): Promise<string> {
       redirect: "follow",
       signal: AbortSignal.timeout(10000),
     });
-  } catch {
+  } catch (error) {
+    log.error(
+      {
+        event: "short_link_resolve_failed",
+        err: normalizeError(error),
+        inputDomain: parseUrl(inputUrl)?.hostname,
+        durationMs: Math.round(performance.now() - startedAt),
+      },
+      "Could not resolve Shopee short link",
+    );
     throw new HttpError(502, "Không resolve được link rút gọn Shopee.");
   }
 
@@ -163,13 +175,38 @@ async function resolveShortShopeeLink(inputUrl: string): Promise<string> {
     (finalUrl.protocol !== "https:" && finalUrl.protocol !== "http:") ||
     isShortShopeeLinkDomain(finalUrl.hostname)
   ) {
+    log.warn(
+      {
+        event: "short_link_resolve_failed",
+        inputDomain: parseUrl(inputUrl)?.hostname,
+        resolvedDomain: finalUrl?.hostname,
+        durationMs: Math.round(performance.now() - startedAt),
+        reason: "invalid_redirect_target",
+      },
+      "Shopee short link returned an invalid target",
+    );
     throw new HttpError(502, "Link rút gọn Shopee không trả về link sản phẩm gốc.");
   }
 
-  return cleanShopeeOriginLink(resolvedUrl);
+  const originLink = cleanShopeeOriginLink(resolvedUrl);
+  const productIds = extractProductIds(new URL(originLink));
+
+  log.info(
+    {
+      event: "short_link_resolved",
+      inputDomain: parseUrl(inputUrl)?.hostname,
+      resolvedDomain: finalUrl.hostname,
+      shopId: productIds?.shopId,
+      itemId: productIds?.itemId,
+      durationMs: Math.round(performance.now() - startedAt),
+    },
+    "Shopee short link resolved",
+  );
+
+  return originLink;
 }
 
-async function getOriginLink(productUrl: string) {
+async function getOriginLink(productUrl: string, log: Logger) {
   const inputUrl = validateShopeeUrl(productUrl.trim());
 
   if (!isShortShopeeLinkDomain(inputUrl.hostname)) {
@@ -180,7 +217,7 @@ async function getOriginLink(productUrl: string) {
   }
 
   return {
-    originLink: await resolveShortShopeeLink(productUrl.trim()),
+    originLink: await resolveShortShopeeLink(productUrl.trim(), log),
     resolved: true,
   };
 }
@@ -238,9 +275,9 @@ function applyCors(request: Request, response: ExpressResponse, next: NextFuncti
   next();
 }
 
-async function convertShopeeLink(productUrl: string): Promise<ConvertResponse> {
+async function convertShopeeLink(productUrl: string, log: Logger): Promise<ConvertResponse> {
   const { affiliateId, subId } = getAffiliateConfig();
-  const { originLink, resolved } = await getOriginLink(productUrl);
+  const { originLink, resolved } = await getOriginLink(productUrl, log);
 
   return {
     affiliateUrl: createAffiliateUrl(originLink, affiliateId, subId),
@@ -249,8 +286,8 @@ async function convertShopeeLink(productUrl: string): Promise<ConvertResponse> {
   };
 }
 
-async function convertShopeeDashboardLink(productUrl: string): Promise<ConvertResponse> {
-  const { originLink, resolved } = await getOriginLink(productUrl);
+async function convertShopeeDashboardLink(productUrl: string, log: Logger): Promise<ConvertResponse> {
+  const { originLink, resolved } = await getOriginLink(productUrl, log);
 
   return {
     affiliateUrl: createDashboardAffiliateUrl(originLink),
@@ -259,34 +296,96 @@ async function convertShopeeDashboardLink(productUrl: string): Promise<ConvertRe
   };
 }
 
-function createConvertHandler(convert: LinkConverter) {
+function createConvertHandler(mode: ConversionMode, convert: LinkConverter) {
   return async (request: Request, response: ExpressResponse) => {
+    const startedAt = performance.now();
     const parsedBody = convertRequestSchema.safeParse(request.body);
 
     if (!parsedBody.success) {
+      request.log.warn(
+        {
+          event: "conversion_failed",
+          mode,
+          statusCode: 400,
+          reason: "invalid_request_body",
+          durationMs: Math.round(performance.now() - startedAt),
+        },
+        "Conversion request validation failed",
+      );
       response.status(400).json({ message: "Vui lòng nhập URL Shopee." });
       return;
     }
 
+    const inputDomain = parseUrl(parsedBody.data.productUrl)?.hostname;
+    request.log.info(
+      {
+        event: "conversion_started",
+        mode,
+        inputDomain,
+      },
+      "Link conversion started",
+    );
+
     try {
-      response.json(await convert(parsedBody.data.productUrl));
+      const result = await convert(parsedBody.data.productUrl, request.log);
+      const productIds = extractProductIds(new URL(result.originLink));
+
+      request.log.info(
+        {
+          event: "conversion_succeeded",
+          mode,
+          inputDomain,
+          resolved: result.resolved,
+          shopId: productIds?.shopId,
+          itemId: productIds?.itemId,
+          statusCode: 200,
+          durationMs: Math.round(performance.now() - startedAt),
+        },
+        "Link conversion succeeded",
+      );
+      response.json(result);
     } catch (error) {
       if (error instanceof HttpError) {
+        const logMethod = error.statusCode >= 500 ? request.log.error.bind(request.log) : request.log.warn.bind(request.log);
+        logMethod(
+          {
+            event: "conversion_failed",
+            mode,
+            inputDomain,
+            statusCode: error.statusCode,
+            errorType: error.name,
+            ...(error.statusCode >= 500 ? { err: error } : {}),
+            durationMs: Math.round(performance.now() - startedAt),
+          },
+          "Link conversion failed",
+        );
         response.status(error.statusCode).json({ message: error.message });
         return;
       }
 
+      request.log.error(
+        {
+          event: "conversion_failed",
+          mode,
+          inputDomain,
+          statusCode: 500,
+          err: normalizeError(error),
+          durationMs: Math.round(performance.now() - startedAt),
+        },
+        "Unexpected link conversion error",
+      );
       response.status(500).json({ message: "Đã có lỗi xảy ra khi chuyển đổi link." });
     }
   };
 }
 
 const app = express();
+app.use(requestLogger);
 app.use(applyCors);
 app.use(express.json({ limit: "16kb" }));
 
-app.post("/api/convert", createConvertHandler(convertShopeeLink));
-app.post("/api/getlinkA", createConvertHandler(convertShopeeDashboardLink));
+app.post("/api/convert", createConvertHandler("affiliate", convertShopeeLink));
+app.post("/api/getlinkA", createConvertHandler("dashboard", convertShopeeDashboardLink));
 
 const frontendDistPath = path.resolve(__dirname, "../../frontend/dist");
 const frontendIndexPath = path.join(frontendDistPath, "index.html");
@@ -298,8 +397,38 @@ if (fs.existsSync(frontendIndexPath)) {
   });
 }
 
+app.use(errorHandler);
+
 const port = Number(process.env.PORT ?? 3000);
 
 app.listen(port, () => {
-  console.log(`ConvertLink server listening on http://localhost:${port}`);
+  logger.info(
+    {
+      event: "server_started",
+      port,
+    },
+    "ConvertLink server started",
+  );
+});
+
+process.on("unhandledRejection", (reason) => {
+  logger.fatal(
+    {
+      event: "unhandled_rejection",
+      err: normalizeError(reason),
+    },
+    "Unhandled promise rejection",
+  );
+});
+
+process.on("uncaughtException", (error) => {
+  logger.fatal(
+    {
+      event: "uncaught_exception",
+      err: error,
+    },
+    "Uncaught exception",
+  );
+  logger.flush();
+  process.exit(1);
 });
