@@ -15,6 +15,25 @@ import { convertShopeeLink, getLinkA } from "@/services/convertApi";
 import { isSupportedShopeeDomain, parseShopeeUrl } from "@/services/shopeeAffiliate";
 import type { ConverterFormValues } from "@/types/converter";
 
+function ShopeeIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="size-5"
+    >
+      <path d="M5.5 8.5h13l1 12h-15l1-12Z" />
+      <path d="M8.5 9V6.5a3.5 3.5 0 0 1 7 0V9" />
+      <path d="M14.8 12.4c-.7-.5-1.6-.7-2.5-.7-1.2 0-2.1.6-2.1 1.5 0 2.3 4.7 1.2 4.7 4 0 1.1-1 1.9-2.5 1.9-1 0-2-.3-2.8-.9" />
+    </svg>
+  );
+}
+
 async function copyTextToClipboard(text: string) {
   if (navigator.clipboard?.writeText) {
     await navigator.clipboard.writeText(text);
@@ -97,6 +116,21 @@ export function ShopeeAffiliateForm() {
     } catch {
       toast.error("Không thể copy link. Vui lòng copy thủ công.");
     }
+  }
+
+  function openConvertedLink() {
+    if (!result) {
+      return;
+    }
+
+    const popup = window.open(result, "_blank");
+
+    if (!popup) {
+      toast.error("Trình duyệt đã chặn tab mới. Vui lòng cho phép popup rồi thử lại.");
+      return;
+    }
+
+    popup.opener = null;
   }
 
   async function openLinkA() {
@@ -262,6 +296,16 @@ export function ShopeeAffiliateForm() {
       >
         <ExternalLink />
         {isOpeningLinkA ? "Đang mở link" : "Mở Link A"}
+      </Button>
+
+      <Button
+        type="button"
+        disabled={!result}
+        onClick={openConvertedLink}
+        className="mt-3 h-12 w-full rounded-lg bg-white text-base font-bold text-[#f04f2a] shadow-xl shadow-red-950/15 hover:bg-orange-50 hover:text-[#df421f] sm:h-14"
+      >
+        <ShopeeIcon />
+        Mở Shopee
       </Button>
     </section>
   );
