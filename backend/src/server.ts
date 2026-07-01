@@ -194,6 +194,8 @@ async function resolveShortShopeeLink(inputUrl: string, log: Logger): Promise<st
   log.info(
     {
       event: "short_link_resolved",
+      fromLink: inputUrl,
+      toLink: originLink,
       inputDomain: parseUrl(inputUrl)?.hostname,
       resolvedDomain: finalUrl.hostname,
       shopId: productIds?.shopId,
@@ -329,11 +331,16 @@ function createConvertHandler(mode: ConversionMode, convert: LinkConverter) {
     try {
       const result = await convert(parsedBody.data.productUrl, request.log);
       const productIds = extractProductIds(new URL(result.originLink));
+      const fromLink = parsedBody.data.productUrl.trim();
+      const toLink = result.affiliateUrl;
 
       request.log.info(
         {
           event: "conversion_succeeded",
           mode,
+          fromLink,
+          toLink,
+          originLink: result.originLink,
           inputDomain,
           resolved: result.resolved,
           shopId: productIds?.shopId,
