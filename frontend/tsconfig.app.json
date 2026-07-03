@@ -16,6 +16,9 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "noFallthroughCasesInSwitch": true,
+    "ignoreDeprecations": "6.0",
+    "baseUrl": ".",
+    "types": ["vite/client", "react", "react-dom"],
     "paths": {
       "@/*": ["./src/*"]
     }

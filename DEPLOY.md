@@ -10,7 +10,7 @@ Repo da co file `render.yaml` de Render doc cau hinh tu dong:
 Service type: Web Service
 Plan: Free
 Runtime: Node
-Build command: npm install --include=dev --include=optional && npm install --workspace frontend --no-save @rollup/rollup-linux-x64-gnu@4.62.2 && npm run build && npm prune --omit=dev
+Build command: npm install --include=dev --include=optional && npm install --workspace frontend --no-save typescript@5.6.3 vite@6.4.3 @types/node@22.20.0 @types/react@19.2.17 @types/react-dom@19.2.3 @rollup/rollup-linux-x64-gnu@4.62.2 && npm run build && npm prune --omit=dev
 Start command: npm start
 ```
 
