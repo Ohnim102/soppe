@@ -1,4 +1,44 @@
-# Deploy len cPanel
+# Deploy
+
+## Deploy tam tren Render Free Web Service
+
+Du an co the deploy len Render bang 1 Web Service duy nhat. Backend Express se serve ca API va frontend static sau khi build.
+
+Repo da co file `render.yaml` de Render doc cau hinh tu dong:
+
+```text
+Service type: Web Service
+Plan: Free
+Runtime: Node
+Build command: npm ci --include=dev && npm run build && npm prune --omit=dev
+Start command: npm start
+```
+
+Tren Render, tao service bang **New > Blueprint** neu repo da day len GitHub/GitLab, chon file `render.yaml`, roi nhap cac bien moi truong bi danh dau `sync: false`:
+
+```env
+SHOPEE_AFFILIATE_ID=17399820370
+SHOPEE_SUB_ID=addlivetag-huybt---
+SHOPEE_AFFILIATE_DASHBOARD=https://example.com/affiliate
+CORS_ALLOWED_ORIGINS=https://ten-service.onrender.com
+```
+
+Neu chua biet URL Render luc tao lan dau, co the de `CORS_ALLOWED_ORIGINS` rong hoac dat tam URL frontend/backend sau khi Render cap URL. Vi frontend va backend cung domain, frontend se goi API noi bo:
+
+```text
+/api/convert
+/api/getlinkA
+```
+
+Sau khi deploy xong, truy cap URL Render dang:
+
+```text
+https://ten-service.onrender.com
+```
+
+Luu y: Render Free Web Service co the sleep khi khong co truy cap, request dau tien sau khi sleep se cham hon.
+
+## Deploy len cPanel
 
 Du an gom 2 phan:
 

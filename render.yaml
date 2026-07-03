@@ -1,0 +1,30 @@
+services:
+  - type: web
+    name: convertlink
+    runtime: node
+    plan: free
+    buildCommand: npm ci --include=dev && npm run build && npm prune --omit=dev
+    startCommand: npm start
+    envVars:
+      - key: NODE_VERSION
+        value: 20
+      - key: NODE_ENV
+        value: production
+      - key: VITE_API_BASE_URL
+        value: ""
+      - key: SHOPEE_AFFILIATE_ID
+        sync: false
+      - key: SHOPEE_SUB_ID
+        sync: false
+      - key: SHOPEE_AFFILIATE_DASHBOARD
+        sync: false
+      - key: CORS_ALLOWED_ORIGINS
+        sync: false
+      - key: LOG_LEVEL
+        value: info
+      - key: LOG_PRETTY
+        value: "false"
+      - key: LOG_IP
+        value: "false"
+      - key: LOG_FILE
+        value: ""
