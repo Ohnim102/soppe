@@ -3,7 +3,7 @@ services:
     name: convertlink
     runtime: node
     plan: free
-    buildCommand: npm install --include=dev && npm run build && npm prune --omit=dev
+    buildCommand: npm install --include=dev --include=optional && npm install --workspace frontend --no-save typescript@5.6.3 @types/node@22.20.0 @rollup/rollup-linux-x64-gnu@4.62.2 && npm run build && npm prune --omit=dev
     startCommand: npm start
     envVars:
       - key: NODE_VERSION
