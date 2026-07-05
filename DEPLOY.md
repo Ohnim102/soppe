@@ -10,7 +10,7 @@ Repo da co file `render.yaml` de Render doc cau hinh tu dong:
 Service type: Web Service
 Plan: Free
 Runtime: Node
-Build command: npm install --include=dev --include=optional && npm install --workspace frontend --no-save typescript@5.6.3 vite@6.4.3 @types/node@22.20.0 @types/react@19.2.17 @types/react-dom@19.2.3 @rollup/rollup-linux-x64-gnu@4.62.2 && npm run build && npm prune --omit=dev
+Build command: npm install --include=dev --include=optional && npm install --workspace frontend --include=optional --no-save typescript@5.6.3 vite@6.4.3 @types/node@22.20.0 @types/react@19.2.17 @types/react-dom@19.2.3 @rollup/rollup-linux-x64-gnu@4.62.2 lightningcss-linux-x64-gnu@1.32.0 @tailwindcss/oxide-linux-x64-gnu@4.3.1 && npm run build && npm prune --omit=dev
 Start command: npm start
 ```
 
@@ -37,6 +37,12 @@ https://ten-service.onrender.com
 ```
 
 Luu y: Render Free Web Service co the sleep khi khong co truy cap, request dau tien sau khi sleep se cham hon.
+
+Co the kiem tra build trong moi truong Linux giong Render bang Docker truoc khi deploy:
+
+```bash
+docker run --rm -v "%cd%:/src:ro" node:20.20.2 bash -lc "mkdir -p /tmp/app && cp /src/package.json /src/package-lock.json /tmp/app/ && cp -a /src/frontend /tmp/app/frontend && cp -a /src/backend /tmp/app/backend && cd /tmp/app && npm install --include=dev --include=optional && npm install --workspace frontend --include=optional --no-save typescript@5.6.3 vite@6.4.3 @types/node@22.20.0 @types/react@19.2.17 @types/react-dom@19.2.3 @rollup/rollup-linux-x64-gnu@4.62.2 lightningcss-linux-x64-gnu@1.32.0 @tailwindcss/oxide-linux-x64-gnu@4.3.1 && npm run build"
+```
 
 ## Deploy len cPanel
 
