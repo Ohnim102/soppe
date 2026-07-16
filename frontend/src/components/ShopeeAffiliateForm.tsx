@@ -108,7 +108,7 @@ export function ShopeeAffiliateForm({ showGuide = true }: ShopeeAffiliateFormPro
       const nextResult = await convertShopeeLink(values);
 
       setResult(nextResult.affiliateUrl);
-      toast.success("Đã tạo link Affiliate.");
+      toast.success("Đã tạo link Shopee.");
     } catch (error) {
       const message = error instanceof Error ? error.message : "Không thể chuyển đổi link Shopee.";
       setResult("");
