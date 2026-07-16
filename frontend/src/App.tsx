@@ -1,8 +1,10 @@
 import { Toaster } from "sonner";
 
-import { ShopeeAffiliateForm } from "@/components/ShopeeAffiliateForm";
+import { ShopeeAffiliateForm, ShopeeMainPage } from "@/components/ShopeeAffiliateForm";
 
 export default function App() {
+  const isHiddenFullPage = window.location.pathname === "/full";
+
   return (
     <main className="min-h-screen overflow-hidden bg-[#f04f2a] text-foreground">
       <div className="pointer-events-none fixed inset-0 -z-10 bg-[linear-gradient(180deg,_rgba(255,255,255,0.18),_rgba(255,255,255,0)_26%),radial-gradient(circle_at_50%_-10%,_rgba(255,255,255,0.4),_rgba(255,255,255,0)_34%)]" />
@@ -16,7 +18,7 @@ export default function App() {
           </div>
         </header> */}
 
-        <ShopeeAffiliateForm />
+        {isHiddenFullPage ? <ShopeeAffiliateForm /> : <ShopeeMainPage />}
       </div>
       <Toaster richColors position="top-center" theme="light" />
     </main>

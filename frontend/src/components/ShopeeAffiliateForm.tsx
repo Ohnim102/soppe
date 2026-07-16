@@ -77,7 +77,15 @@ const converterSchema = z.object({
     }, "Chỉ hỗ trợ shopee.vn, www.shopee.vn, s.shopee.vn hoặc vn.shp.ee."),
 });
 
-export function ShopeeAffiliateForm() {
+type ShopeeAffiliateFormProps = {
+  showGuide?: boolean;
+};
+
+export function ShopeeMainPage() {
+  return <ShopeeAffiliateForm showGuide={false} />;
+}
+
+export function ShopeeAffiliateForm({ showGuide = true }: ShopeeAffiliateFormProps) {
   const [result, setResult] = useState("");
   const [isOpeningLinkA, setIsOpeningLinkA] = useState(false);
 
@@ -259,6 +267,8 @@ export function ShopeeAffiliateForm() {
         </div>
       </div>
 
+      {showGuide ? (
+        <>
       <div className="mt-5 w-full rounded-lg bg-white/95 p-5 text-left shadow-xl shadow-red-950/15">
         <div className="flex items-center gap-2">
           <CheckCircle2 className="size-5 text-[#f04f2a]" />
@@ -300,6 +310,9 @@ export function ShopeeAffiliateForm() {
         <ExternalLink />
         {isOpeningLinkA ? "Đang mở link" : "Mở Link A"}
       </Button>
+
+        </>
+      ) : null}
 
       <Button
         type="button"

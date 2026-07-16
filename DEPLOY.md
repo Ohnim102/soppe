@@ -1,6 +1,7 @@
 # Deploy
 
 ## Deploy tam tren Render Free Web Service
+`https://dashboard.render.com/`
 
 Du an co the deploy len Render bang 1 Web Service duy nhat. Backend Express se serve ca API va frontend static sau khi build.
 
